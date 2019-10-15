@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -8,6 +9,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Models;
 using MyCompanyName.MyProjectName.EntityFrameworkCore;
 using MyCompanyName.MyProjectName.MultiTenancy;
 using Volo.Abp.AspNetCore.Mvc.UI.Theme.Basic;
@@ -49,10 +52,8 @@ namespace MyCompanyName.MyProjectName
             ConfigureAuthentication(context, configuration);
             ConfigureLocalization();
             ConfigureVirtualFileSystem(context);
-            ConfigureCors(context, configuration);
-
-            //Disabled swagger since it does not support ASP.NET Core 3.0 yet!
-            //ConfigureSwaggerServices(context);
+            ConfigureCors(context, configuration); 
+            ConfigureSwaggerServices(context);
         }
 
         private void ConfigureUrls(IConfigurationRoot configuration)
@@ -107,7 +108,7 @@ namespace MyCompanyName.MyProjectName
             context.Services.AddSwaggerGen(
                 options =>
                 {
-                    options.SwaggerDoc("v1", new Info {Title = "MyProjectName API", Version = "v1"});
+                    options.SwaggerDoc("v1", new OpenApiInfo { Title = "MyProjectName API", Version = "v1"});
                     options.DocInclusionPredicate((docName, description) => true);
                 });
         }
@@ -166,13 +167,20 @@ namespace MyCompanyName.MyProjectName
             app.UseIdentityServer();
             app.UseAbpRequestLocalization();
 
-            /* Disabled swagger since it does not support ASP.NET Core 3.0 yet!
+
             app.UseSwagger();
             app.UseSwaggerUI(options =>
             {
                 options.SwaggerEndpoint("/swagger/v1/swagger.json", "MyProjectName API");
+
+                options.IndexStream = () => GetType().Assembly.GetManifestResourceStream("MyCompanyName.MyProjectName.wwwroot.swagger.ui.index.html");
+
+                options.ConfigObject.AdditionalItems["Authority"] = context.ServiceProvider.GetRequiredService<IConfiguration>()["AuthServer:Authority"];
+                options.ConfigObject.AdditionalItems["SwaggerClientId"] = "MyProjectName_App";
+                options.ConfigObject.AdditionalItems["SwaggerClientSecret"] = "1q2w3e*";
+                options.ConfigObject.AdditionalItems["SwaggerScope"] = "MyProjectName";
+                options.ConfigObject.AdditionalItems["TenantKey"] = context.ServiceProvider.GetRequiredService<IOptions<AspNetCoreMultiTenancyOptions>>().Value.TenantKey;
             });
-            */
 
             app.UseAuditing();
             app.UseMvcWithDefaultRouteAndArea();
