@@ -41,18 +41,6 @@
     /* Swagger */
     abp.swagger = abp.swagger || {};
 
-    abp.swagger.addAuthToken = function() {
-        var authToken = abp.auth.getToken();
-        if (!authToken) {
-            return false;
-        }
-
-        var cookieAuth =
-            new SwaggerClient.ApiKeyAuthorization(abp.auth.tokenHeaderName, 'Bearer ' + authToken, 'header');
-        swaggerUi.api.clientAuthorizations.add('bearerAuth', cookieAuth);
-        return true;
-    };
-
     function loginUserInternal(tenantId, configObject, callback) {
         var usernameOrEmailAddress = document.getElementById('userName').value;
         if (!usernameOrEmailAddress) {
@@ -115,7 +103,7 @@
                 }
             };
 
-            xhrTenancyName.open('Get', '/api/abp/multi-tenancy/tenants/by-name/' + tenancyName, true);
+            xhrTenancyName.open('GET', '/api/abp/multi-tenancy/tenants/by-name/' + tenancyName, true);
             xhrTenancyName.send();
         } else {
             loginUserInternal(null, configObject, callback); // Login for host
