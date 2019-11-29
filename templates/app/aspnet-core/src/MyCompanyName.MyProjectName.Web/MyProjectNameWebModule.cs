@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using MyCompanyName.MyProjectName.EntityFrameworkCore;
 using MyCompanyName.MyProjectName.Localization;
 using MyCompanyName.MyProjectName.MultiTenancy;
@@ -16,6 +17,7 @@ using Swashbuckle.AspNetCore.Swagger;
 using Volo.Abp;
 using Volo.Abp.Account.Web;
 using Volo.Abp.AspNetCore.Authentication.JwtBearer;
+using Volo.Abp.AspNetCore.MultiTenancy;
 using Volo.Abp.AspNetCore.Mvc;
 using Volo.Abp.AspNetCore.Mvc.Localization;
 using Volo.Abp.AspNetCore.Mvc.UI;
@@ -30,6 +32,7 @@ using Volo.Abp.Identity.Web;
 using Volo.Abp.Localization;
 using Volo.Abp.Modularity;
 using Volo.Abp.PermissionManagement.Web;
+using Volo.Abp.Swagger;
 using Volo.Abp.TenantManagement.Web;
 using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.UI;
@@ -47,7 +50,8 @@ namespace MyCompanyName.MyProjectName.Web
         typeof(AbpAccountWebIdentityServerModule),
         typeof(AbpAspNetCoreMvcUiBasicThemeModule),
         typeof(AbpAspNetCoreAuthenticationJwtBearerModule),
-        typeof(AbpTenantManagementWebModule)
+        typeof(AbpTenantManagementWebModule),
+        typeof(AbpSwaggerModule)
         )]
     public class MyProjectNameWebModule : AbpModule
     {
@@ -179,6 +183,7 @@ namespace MyCompanyName.MyProjectName.Web
                     options.SwaggerDoc("v1", new OpenApiInfo { Title = "MyProjectName API", Version = "v1" });
                     options.DocInclusionPredicate((docName, description) => true);
                     options.CustomSchemaIds(type => type.FullName);
+                    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme());
                 }
             );
         }
@@ -214,9 +219,17 @@ namespace MyCompanyName.MyProjectName.Web
             app.UseAbpRequestLocalization();
 
             app.UseSwagger();
-            app.UseSwaggerUI(options =>
+            app.UseSwaggerUIWithAbpOAuthLogin(options =>
             {
                 options.SwaggerEndpoint("/swagger/v1/swagger.json", "MyProjectName API");
+
+                var configuration = context.ServiceProvider.GetRequiredService<IConfiguration>();
+                options.Authority = configuration["AuthServer:Authority"];
+                options.SwaggerClientId = configuration["AuthServer:SwaggerClientId"];
+                options.SwaggerClientSecret = configuration["AuthServer:SwaggerClientSecret"];
+                options.SwaggerScope = "MyProjectName";
+                options.MultiTenancyIsEnabled = MultiTenancyConsts.IsEnabled;
+                options.TenantKey = context.ServiceProvider.GetRequiredService<IOptions<AbpAspNetCoreMultiTenancyOptions>>().Value.TenantKey;
             });
 
             app.UseAuditing();

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using MyCompanyName.MyProjectName.EntityFrameworkCore;
 using MyCompanyName.MyProjectName.MultiTenancy;
 using Volo.Abp.AspNetCore.Mvc.UI.Theme.Basic;
@@ -21,6 +22,7 @@ using Volo.Abp.AspNetCore.Mvc;
 using Volo.Abp.Autofac;
 using Volo.Abp.Localization;
 using Volo.Abp.Modularity;
+using Volo.Abp.Swagger;
 using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.VirtualFileSystem;
 
@@ -34,7 +36,8 @@ namespace MyCompanyName.MyProjectName
         typeof(MyProjectNameEntityFrameworkCoreDbMigrationsModule),
         typeof(AbpAspNetCoreMvcUiBasicThemeModule),
         typeof(AbpAspNetCoreAuthenticationJwtBearerModule),
-        typeof(AbpAccountWebIdentityServerModule)
+        typeof(AbpAccountWebIdentityServerModule),
+        typeof(AbpSwaggerModule)
         )]
     public class MyProjectNameHttpApiHostModule : AbpModule
     {
@@ -108,6 +111,7 @@ namespace MyCompanyName.MyProjectName
                 {
                     options.SwaggerDoc("v1", new OpenApiInfo {Title = "MyProjectName API", Version = "v1"});
                     options.DocInclusionPredicate((docName, description) => true);
+                    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme());
                 });
         }
 
@@ -166,9 +170,17 @@ namespace MyCompanyName.MyProjectName
             app.UseAbpRequestLocalization();
 
             app.UseSwagger();
-            app.UseSwaggerUI(options =>
+            app.UseSwaggerUIWithAbpOAuthLogin(options =>
             {
                 options.SwaggerEndpoint("/swagger/v1/swagger.json", "MyProjectName API");
+
+                var configuration = context.ServiceProvider.GetRequiredService<IConfiguration>();
+                options.Authority = configuration["AuthServer:Authority"];
+                options.SwaggerClientId = configuration["AuthServer:SwaggerClientId"];
+                options.SwaggerClientSecret = configuration["AuthServer:SwaggerClientSecret"];
+                options.SwaggerScope = "MyProjectName";
+                options.MultiTenancyIsEnabled = MultiTenancyConsts.IsEnabled;
+                options.TenantKey = context.ServiceProvider.GetRequiredService<IOptions<AbpAspNetCoreMultiTenancyOptions>>().Value.TenantKey;
             });
 
             app.UseAuditing();
