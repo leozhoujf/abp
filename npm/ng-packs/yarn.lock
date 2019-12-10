@@ -2,14 +2,14 @@
 # yarn lockfile v1
 
 
-"@abp/ng.account.config@^1.1.0":
+"@abp/ng.account.config@1.1.0", "@abp/ng.account.config@^1.1.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@abp/ng.account.config/-/ng.account.config-1.1.0.tgz#abb8abaf1154147a1b7ff738b7f465fdb148239c"
   integrity sha512-Awxodsq2i+O8PKdcFgQzvFz06gKkKU/AcSSprTK2Wj5AKwMNVcTydShh3OLvWPS/gkyp8L7pRfkjPcabZdQlng==
   dependencies:
     tslib "^1.9.0"
 
-"@abp/ng.account@^1.1.0":
+"@abp/ng.account@1.1.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@abp/ng.account/-/ng.account-1.1.0.tgz#800d1d9755d7942bbc6e8fdd462dce8688048c9c"
   integrity sha512-VIZvFCczZ4ixH1x+fqQt2zi5n4/IL5AH5Ud0W+8gZfXVRmOMhOzYct8F2/LLzt/U4qP7Sam8+e/AJPZ3dpq/KQ==
@@ -40,14 +40,14 @@
     "@abp/ng.theme.shared" "^1.1.0"
     tslib "^1.9.0"
 
-"@abp/ng.identity.config@^1.1.0":
+"@abp/ng.identity.config@1.1.0", "@abp/ng.identity.config@^1.1.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@abp/ng.identity.config/-/ng.identity.config-1.1.0.tgz#412254ea011d2dd90ee7ffe26ff4a8f0222117ee"
   integrity sha512-c2YVhhodT+gGm25JC/M9U13H+3MBUea/jEB9nvTcxU6c2e/bTzj/I5p9jY23xBO6bw6KHuxScNLRbP89XN/jjA==
   dependencies:
     tslib "^1.9.0"
 
-"@abp/ng.identity@^1.1.0":
+"@abp/ng.identity@1.1.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@abp/ng.identity/-/ng.identity-1.1.0.tgz#42a4c19079d4475728ff3ba4276aa0e5ea95ba3c"
   integrity sha512-R3L5InMRbp+8JUmoYl+MwuH7bwc3jZ7++cfwUq9dZg80MpBbhrQ2Jl99upq2iObsc7oWKrUefz2Hgy0giFH8Wg==
@@ -65,14 +65,14 @@
     "@abp/ng.theme.shared" "^1.1.0"
     tslib "^1.9.0"
 
-"@abp/ng.setting-management.config@^1.1.0":
+"@abp/ng.setting-management.config@1.1.0", "@abp/ng.setting-management.config@^1.1.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@abp/ng.setting-management.config/-/ng.setting-management.config-1.1.0.tgz#a6234b3fcc7d6e37de14a4594aaed9ce2a202034"
   integrity sha512-YACTSTn8dpCGs0nVBV1EmZM0YTuhY56JSs9wcB8Inmk/y61mtgtorZPSqHxEeJdvuoofQ4w1RTw9MwPgV36aLg==
   dependencies:
     tslib "^1.9.0"
 
-"@abp/ng.setting-management@^1.1.0":
+"@abp/ng.setting-management@1.1.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@abp/ng.setting-management/-/ng.setting-management-1.1.0.tgz#fec72f72d3e100e3d832dc2929b90c9b0faa40ed"
   integrity sha512-8VPk6YoeN/OPJgeZhwYSsIUV+V3vFw/HhAM3pTcg37BSOiW7RI+SyCBrWymkkDzvTy4KtOQmHueo9fa6GvstCQ==
@@ -81,14 +81,14 @@
     "@abp/ng.theme.shared" "^1.1.0"
     tslib "^1.9.0"
 
-"@abp/ng.tenant-management.config@^1.1.0":
+"@abp/ng.tenant-management.config@1.1.0", "@abp/ng.tenant-management.config@^1.1.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@abp/ng.tenant-management.config/-/ng.tenant-management.config-1.1.0.tgz#57c5dfb12a4f93220e56a2ba1af2cf47c11085fc"
   integrity sha512-V5pVN0NxYjxq69KDoK2fRqKxeyfnXuICKQQtbf6gqZj4F2X3MwaWuzNVpIJxws8CVW5FfwIf5xtQALrvsmw6rA==
   dependencies:
     tslib "^1.9.0"
 
-"@abp/ng.tenant-management@^1.1.0":
+"@abp/ng.tenant-management@1.1.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@abp/ng.tenant-management/-/ng.tenant-management-1.1.0.tgz#61ff9f2027a904987c9de747bc7d320f73b81a32"
   integrity sha512-90WjxPQJ3mo8+tC/7CIx6JIL4r3EnaaBJqSCPMwbdT7soonKD0vZZZeJwUW+4NTyMMWBqF6eujGLkWYNiJtokg==
@@ -98,7 +98,7 @@
     "@abp/ng.theme.shared" "^1.1.0"
     tslib "^1.9.0"
 
-"@abp/ng.theme.basic@^1.1.0":
+"@abp/ng.theme.basic@1.1.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@abp/ng.theme.basic/-/ng.theme.basic-1.1.0.tgz#70c3ec486affa7c833f56127392adf7989400922"
   integrity sha512-Z1TTlv4WmEhXtDE24IPC4BF3/PPCbfE+N/7qSuUMKC1kZ3TRx9Cz8ojKwR8LVW4YsfhDCFmr0u7lI4uAXYnrUA==
@@ -2278,6 +2278,11 @@
   version "12.12.14"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-12.12.14.tgz#1c1d6e3c75dba466e0326948d56e8bd72a1903d2"
   integrity sha512-u/SJDyXwuihpwjXy7hOOghagLEV1KdAST6syfnOk6QZAMzZuWZqXy5aYYZbh8Jdpd4escVFP0MvftHNDb9pruA==
+
+"@types/node@>= 8":
+  version "12.12.15"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-12.12.15.tgz#8dfb6ce22fedd469128137640a3aa8f17415422f"
+  integrity sha512-Pv+vWicyFd07Hw/SmNnTUguqrHgDfMtjabvD9sQyxeqbpCEg8CmViLBaVPHtNsoBgZECrRf5/pgV6FJIBrGSjw==
 
 "@types/node@^8.0.31":
   version "8.10.59"
