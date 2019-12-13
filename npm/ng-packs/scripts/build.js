@@ -4,7 +4,6 @@ import fse from 'fs-extra';
 import program from 'commander';
 
 (async () => {
-  program.option('-c, --noCommit', 'skip commit process', false);
   program.option('-i, --noInstall', 'skip updating package.json and installation', false);
 
   program.parse(process.argv);
@@ -14,7 +13,7 @@ import program from 'commander';
       await execa('yarn', ['install-new-dependencies'], { stdout: 'inherit' });
     }
 
-    execa.sync(
+    await execa(
       'yarn',
       [
         'symlink',
@@ -57,11 +56,6 @@ import program from 'commander';
   } catch (error) {
     console.error(error.stderr);
     process.exit(1);
-  }
-
-  if (!program.noCommit) {
-    await execa('git', ['add', '../dist/*', '../package.json'], { stdout: 'inherit' });
-    await execa('git', ['commit', '-m', 'Build ng packages', '--no-verify'], { stdout: 'inherit' });
   }
 
   process.exit(0);

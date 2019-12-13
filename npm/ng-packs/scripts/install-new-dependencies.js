@@ -2,7 +2,7 @@
 import execa from 'execa';
 import fse from 'fs-extra';
 
-(async () => {
+const updateAndInstall = async () => {
   const { projects } = await fse.readJSON('../angular.json');
   const projectNames = Object.keys(projects).filter(project => project !== 'dev-app');
 
@@ -18,7 +18,7 @@ import fse from 'fs-extra';
       ...packageJson.devDependencies,
       ...dependencies,
       ...peerDependencies,
-      ...{ [name]: version },
+      ...{ [name]: `^${version}` },
     };
 
     packageJson.devDependencies = Object.keys(packageJson.devDependencies)
@@ -39,4 +39,8 @@ import fse from 'fs-extra';
   }
 
   process.exit(0);
-})();
+};
+
+updateAndInstall();
+
+export default updateAndInstall;
