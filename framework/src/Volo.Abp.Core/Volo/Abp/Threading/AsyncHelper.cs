@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Nito.AsyncEx;
 
 namespace Volo.Abp.Threading
@@ -57,7 +60,27 @@ namespace Volo.Abp.Threading
         /// <returns>Result of the async operation</returns>
         public static TResult RunSync<TResult>(Func<Task<TResult>> func)
         {
-            return AsyncContext.Run(func);
+            Log($"Starting AsyncHelper.RunSync TResult ({Interlocked.Increment(ref activeSync)})" + Environment.NewLine + Environment.StackTrace);
+            var result = AsyncContext.Run(func);
+            Log($"Stopped AsyncHelper.RunSync TResult ({Interlocked.Decrement(ref activeSync)})");
+            return result;
+        }
+
+        private static long activeSync = 0;
+
+        private static ILogger<AbpApplicationBase> _logger;
+        private static readonly object _syncObj = new object();
+        private static void Log(string text)
+        {
+            if (_logger == null)
+            {
+                lock (_syncObj)
+                {
+                    _logger = AbpApplicationBase.CurrentServiceProvider.GetRequiredService<ILogger<AbpApplicationBase>>();
+                }
+            }
+
+            _logger.LogInformation(text);
         }
 
         /// <summary>
@@ -66,7 +89,9 @@ namespace Volo.Abp.Threading
         /// <param name="action">An async action</param>
         public static void RunSync(Func<Task> action)
         {
+            Log($"Starting AsyncHelper.RunSync void ({Interlocked.Increment(ref activeSync)})" + Environment.NewLine + Environment.StackTrace);
             AsyncContext.Run(action);
+            Log($"Stopped AsyncHelper.RunSync void ({Interlocked.Decrement(ref activeSync)})");
         }
     }
 }

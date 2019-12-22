@@ -15,6 +15,8 @@ namespace Volo.Abp
 
         public IServiceProvider ServiceProvider { get; private set; }
 
+        internal static IServiceProvider CurrentServiceProvider { get; set; }
+
         public IServiceCollection Services { get; }
 
         public IReadOnlyList<IAbpModuleDescriptor> Modules { get; }
@@ -63,6 +65,7 @@ namespace Volo.Abp
         {
             ServiceProvider = serviceProvider;
             ServiceProvider.GetRequiredService<ObjectAccessor<IServiceProvider>>().Value = ServiceProvider;
+            CurrentServiceProvider = serviceProvider;
         }
 
         protected virtual void InitializeModules()
