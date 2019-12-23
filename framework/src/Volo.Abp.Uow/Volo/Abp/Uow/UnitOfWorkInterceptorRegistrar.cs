@@ -9,7 +9,7 @@ namespace Volo.Abp.Uow
         {
             if (UnitOfWorkHelper.IsUnitOfWorkType(context.ImplementationType.GetTypeInfo()))
             {
-                context.Interceptors.TryAdd<UnitOfWorkInterceptor>();
+                //context.Interceptors.TryAdd<UnitOfWorkInterceptor>();
             }
         }
     }

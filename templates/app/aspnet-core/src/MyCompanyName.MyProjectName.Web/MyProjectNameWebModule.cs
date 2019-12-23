@@ -4,6 +4,7 @@ using Localization.Resources.AbpUi;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -25,6 +26,7 @@ using Volo.Abp.AspNetCore.Mvc.UI.Theme.Basic;
 using Volo.Abp.AspNetCore.Mvc.UI.Theme.Shared;
 using Volo.Abp.Autofac;
 using Volo.Abp.AutoMapper;
+using Volo.Abp.BackgroundJobs;
 using Volo.Abp.FeatureManagement;
 using Volo.Abp.Identity.Web;
 using Volo.Abp.Localization;
@@ -44,7 +46,7 @@ namespace MyCompanyName.MyProjectName.Web
         typeof(MyProjectNameEntityFrameworkCoreDbMigrationsModule),
         typeof(AbpAutofacModule),
         typeof(AbpIdentityWebModule),
-        typeof(AbpAccountWebIdentityServerModule),
+        typeof(AbpAccountWebModule),
         typeof(AbpAspNetCoreMvcUiBasicThemeModule),
         typeof(AbpAspNetCoreAuthenticationJwtBearerModule),
         typeof(AbpTenantManagementWebModule)
@@ -74,11 +76,16 @@ namespace MyCompanyName.MyProjectName.Web
             ConfigureUrls(configuration);
             ConfigureAuthentication(context, configuration);
             ConfigureAutoMapper();
-            ConfigureVirtualFileSystem(hostingEnvironment);
+            ConfigureVirtualFileSystem(hostingEnvironment, configuration);
             ConfigureLocalizationServices();
             ConfigureNavigationServices();
             ConfigureAutoApiControllers();
             ConfigureSwaggerServices(context.Services);
+
+            Configure<AbpBackgroundJobOptions>(options =>
+            {
+                options.IsJobExecutionEnabled = false;
+            });
         }
 
         private void ConfigureUrls(IConfiguration configuration)
@@ -91,13 +98,13 @@ namespace MyCompanyName.MyProjectName.Web
 
         private void ConfigureAuthentication(ServiceConfigurationContext context, IConfiguration configuration)
         {
-            context.Services.AddAuthentication()
-                .AddIdentityServerAuthentication(options =>
-                {
-                    options.Authority = configuration["AuthServer:Authority"];
-                    options.RequireHttpsMetadata = false;
-                    options.ApiName = "MyProjectName";
-                });
+            //context.Services.AddAuthentication()
+            //    .AddIdentityServerAuthentication(options =>
+            //    {
+            //        options.Authority = configuration["AuthServer:Authority"];
+            //        options.RequireHttpsMetadata = false;
+            //        options.ApiName = "MyProjectName";
+            //    });
         }
 
         private void ConfigureAutoMapper()
@@ -109,9 +116,9 @@ namespace MyCompanyName.MyProjectName.Web
             });
         }
 
-        private void ConfigureVirtualFileSystem(IWebHostEnvironment hostingEnvironment)
+        private void ConfigureVirtualFileSystem(IHostEnvironment hostingEnvironment, IConfiguration configuration)
         {
-            if (hostingEnvironment.IsDevelopment())
+            if (hostingEnvironment.IsDevelopment() && !string.Equals(configuration["IsDocker"], "true", StringComparison.OrdinalIgnoreCase))
             {
                 Configure<AbpVirtualFileSystemOptions>(options =>
                 {
@@ -201,15 +208,18 @@ namespace MyCompanyName.MyProjectName.Web
 
             app.UseVirtualFiles();
             app.UseRouting();
+
+            app.UseUnitOfWork();
+
             app.UseAuthentication();
-            app.UseJwtTokenMiddleware();
+            //app.UseJwtTokenMiddleware();
 
             if (MultiTenancyConsts.IsEnabled)
             {
                 app.UseMultiTenancy();
             }
 
-            app.UseIdentityServer();
+            //app.UseIdentityServer();
             app.UseAuthorization();
             app.UseAbpRequestLocalization();
 

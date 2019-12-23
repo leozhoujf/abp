@@ -1,4 +1,5 @@
 ﻿using System;
+using IdentityServer4.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -12,13 +13,14 @@ namespace MyCompanyName.MyProjectName.Web
         {
             Log.Logger = new LoggerConfiguration()
 #if DEBUG
-                .MinimumLevel.Debug()
+                .MinimumLevel.Verbose()
 #else
                 .MinimumLevel.Information()
 #endif
-                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Verbose)
                 .Enrich.FromLogContext()
-                .WriteTo.Async(c => c.File("Logs/logs.txt"))
+                //.WriteTo.Async(c => c.File("Logs/logs.txt"))
+                .WriteTo.Console()
                 .CreateLogger();
 
             try

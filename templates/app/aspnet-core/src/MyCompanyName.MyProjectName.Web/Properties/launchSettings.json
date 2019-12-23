@@ -22,6 +22,17 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "applicationUrl": "https://localhost:44303/"
+    },
+    "Docker": {
+      "commandName": "Docker",
+      "launchBrowser": true,
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
+      "publishAllPorts": true,
+      "useSSL": true,
+      "environmentVariables": {
+        "ConnectionStrings__Default": "Server=host.docker.internal;Database=MyProjectName;User=MyProjectNameUser;Password=1q2w3E*",
+        "IsDocker": "true" 
+      }
     }
   }
 }

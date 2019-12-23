@@ -8,7 +8,7 @@ namespace Volo.Abp.Validation
         {
             if (typeof(IValidationEnabled).IsAssignableFrom(context.ImplementationType))
             {
-                context.Interceptors.TryAdd<ValidationInterceptor>();
+                //context.Interceptors.TryAdd<ValidationInterceptor>();
             }
         }
     }

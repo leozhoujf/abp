@@ -11,7 +11,7 @@ namespace Volo.Abp.Features
         {
             if (ShouldIntercept(context.ImplementationType))
             {
-                context.Interceptors.TryAdd<FeatureInterceptor>();
+                //context.Interceptors.TryAdd<FeatureInterceptor>();
             }
         }
 

@@ -10,7 +10,7 @@ namespace Volo.Abp.Auditing
         {
             if (ShouldIntercept(context.ImplementationType))
             {
-                context.Interceptors.TryAdd<AuditingInterceptor>();
+                //context.Interceptors.TryAdd<AuditingInterceptor>();
             }
         }
 

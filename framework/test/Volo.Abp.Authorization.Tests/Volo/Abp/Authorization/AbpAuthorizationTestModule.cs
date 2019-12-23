@@ -15,7 +15,7 @@ namespace Volo.Abp.Authorization
             {
                 if (typeof(IMyAuthorizedService1).IsAssignableFrom(onServiceRegistredContext.ImplementationType))
                 {
-                    onServiceRegistredContext.Interceptors.TryAdd<AuthorizationInterceptor>();
+                    //onServiceRegistredContext.Interceptors.TryAdd<AuthorizationInterceptor>();
                 }
             });
         }

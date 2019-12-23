@@ -18,7 +18,7 @@ namespace Volo.Abp.AspNetCore.Uow
 
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
-            using (var uow = _unitOfWorkManager.Reserve(UnitOfWorkReservationName))
+            using (var uow = _unitOfWorkManager.Begin())
             {
                 await next(context);
                 await uow.CompleteAsync(context.RequestAborted);

@@ -12,7 +12,7 @@ namespace Volo.Abp.Authorization
         {
             if (ShouldIntercept(context.ImplementationType))
             {
-                context.Interceptors.TryAdd<AuthorizationInterceptor>();
+                //context.Interceptors.TryAdd<AuthorizationInterceptor>();
             }
         }
 
