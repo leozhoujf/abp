@@ -1,5 +1,6 @@
 ﻿using System.Net.Http;
 using System.Threading.Tasks;
+using IdentityModel.Client;
 using JetBrains.Annotations;
 
 namespace Volo.Abp.IdentityModel
@@ -12,6 +13,9 @@ namespace Volo.Abp.IdentityModel
             string identityClientName = null);
 
         Task<string> GetAccessTokenAsync(
+            IdentityClientConfiguration configuration);
+
+        Task<TokenResponse> GetTokenResponseAsync(
             IdentityClientConfiguration configuration);
     }
 }

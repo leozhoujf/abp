@@ -75,6 +75,23 @@ namespace Volo.Abp.IdentityModel
             return tokenResponse.AccessToken;
         }
 
+        public virtual async Task<TokenResponse> GetTokenResponseAsync(IdentityClientConfiguration configuration)
+        {
+            var discoveryResponse = await GetDiscoveryResponse(configuration).ConfigureAwait(false);
+            if (discoveryResponse.IsError)
+            {
+                throw new AbpException($"Could not retrieve the OpenId Connect discovery document! ErrorType: {discoveryResponse.ErrorType}. Error: {discoveryResponse.Error}");
+            }
+
+            var tokenResponse = await GetTokenResponse(discoveryResponse, configuration).ConfigureAwait(false);
+            if (tokenResponse.IsError)
+            {
+                throw new AbpException($"Could not get token from the OpenId Connect server! ErrorType: {tokenResponse.ErrorType}. Error: {tokenResponse.Error}. ErrorDescription: {tokenResponse.ErrorDescription}. HttpStatusCode: {tokenResponse.HttpStatusCode}");
+            }
+
+            return tokenResponse;
+        }
+
         protected virtual void SetAccessToken(HttpClient client, string accessToken)
         {
             //TODO: "Bearer" should be configurable
@@ -109,7 +126,7 @@ namespace Volo.Abp.IdentityModel
         }
 
         protected virtual async Task<TokenResponse> GetTokenResponse(
-            DiscoveryDocumentResponse discoveryResponse, 
+            DiscoveryDocumentResponse discoveryResponse,
             IdentityClientConfiguration configuration)
         {
             using (var httpClient = new HttpClient())
@@ -134,7 +151,7 @@ namespace Volo.Abp.IdentityModel
 
         protected virtual Task<PasswordTokenRequest> CreatePasswordTokenRequestAsync(DiscoveryDocumentResponse discoveryResponse, IdentityClientConfiguration configuration)
         {
-            var request =  new PasswordTokenRequest
+            var request = new PasswordTokenRequest
             {
                 Address = discoveryResponse.TokenEndpoint,
                 Scope = configuration.Scope,
@@ -149,11 +166,11 @@ namespace Volo.Abp.IdentityModel
             return Task.FromResult(request);
         }
 
-        protected virtual Task<ClientCredentialsTokenRequest>  CreateClientCredentialsTokenRequestAsync(
-            DiscoveryDocumentResponse discoveryResponse, 
+        protected virtual Task<ClientCredentialsTokenRequest> CreateClientCredentialsTokenRequestAsync(
+            DiscoveryDocumentResponse discoveryResponse,
             IdentityClientConfiguration configuration)
         {
-            var request =  new ClientCredentialsTokenRequest
+            var request = new ClientCredentialsTokenRequest
             {
                 Address = discoveryResponse.TokenEndpoint,
                 Scope = configuration.Scope,

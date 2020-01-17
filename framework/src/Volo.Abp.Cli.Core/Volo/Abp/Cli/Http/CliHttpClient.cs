@@ -3,6 +3,7 @@ using System.IO;
 using System.Net.Http;
 using System.Text;
 using IdentityModel.Client;
+using Newtonsoft.Json;
 using Volo.Abp.Cli.Auth;
 
 namespace Volo.Abp.Cli.Http
@@ -35,11 +36,24 @@ namespace Volo.Abp.Cli.Http
                 return;
             }
 
-            var accessToken = File.ReadAllText(CliPaths.AccessToken, Encoding.UTF8);
-            if (!accessToken.IsNullOrEmpty())
+            var tokenResponseSerialized = File.ReadAllText(CliPaths.AccessToken, Encoding.UTF8);
+            if (string.IsNullOrWhiteSpace(tokenResponseSerialized))
             {
-                client.SetBearerToken(accessToken);
+                return;
             }
+
+            var tokenResponse = JsonConvert.DeserializeObject<AuthService.TokenStoreModel>(tokenResponseSerialized);
+            if (tokenResponse == null)
+            {
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(tokenResponse.AccessToken))
+            {
+                return;
+            }
+
+            client.SetBearerToken(tokenResponse.AccessToken);
         }
     }
 }
