@@ -12,6 +12,7 @@ using MyCompanyName.MyProjectName.Localization;
 using MyCompanyName.MyProjectName.MultiTenancy;
 using MyCompanyName.MyProjectName.Web.Menus;
 using Microsoft.OpenApi.Models;
+using MyCompanyName.MyProjectName.Web.Pages.Shared.KendoScripts;
 using Swashbuckle.AspNetCore.Swagger;
 using Volo.Abp;
 using Volo.Abp.Account.Web;
@@ -20,6 +21,7 @@ using Volo.Abp.AspNetCore.Mvc;
 using Volo.Abp.AspNetCore.Mvc.Localization;
 using Volo.Abp.AspNetCore.Mvc.UI;
 using Volo.Abp.AspNetCore.Mvc.UI.Bootstrap;
+using Volo.Abp.AspNetCore.Mvc.UI.Components.LayoutHook;
 using Volo.Abp.AspNetCore.Mvc.UI.MultiTenancy;
 using Volo.Abp.AspNetCore.Mvc.UI.Theme.Basic;
 using Volo.Abp.AspNetCore.Mvc.UI.Theme.Shared;
@@ -36,6 +38,7 @@ using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.UI;
 using Volo.Abp.UI.Navigation;
 using Volo.Abp.VirtualFileSystem;
+using MyCompanyName.MyProjectName.Web.Pages.Shared.KendoStyles;
 
 namespace MyCompanyName.MyProjectName.Web
 {
@@ -81,6 +84,14 @@ namespace MyCompanyName.MyProjectName.Web
             ConfigureNavigationServices();
             ConfigureAutoApiControllers();
             ConfigureSwaggerServices(context.Services);
+
+            context.Services.AddKendo();
+
+            Configure<AbpLayoutHookOptions>(options =>
+                {
+                    options.Add(LayoutHooks.Body.Last, typeof(KendoScriptsViewComponent));
+                    options.Add(LayoutHooks.Head.Last, typeof(KendoStylesViewComponent));
+                });
         }
 
         private void ConfigureUrls(IConfiguration configuration)

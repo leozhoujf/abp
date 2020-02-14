@@ -1,6 +1,7 @@
 ﻿@page
 @inherits MyCompanyName.MyProjectName.Web.Pages.MyProjectNamePage
 @model MyCompanyName.MyProjectName.Web.Pages.IndexModel
+@using Kendo.Mvc.UI
 @section styles {
     <abp-style-bundle>
         <abp-style src="/Pages/Index.css" />
@@ -16,7 +17,13 @@
     <div class="row">
         <div class="col-md-6 mx-auto">
             <p>@L["LongWelcomeMessage"]</p>
-            <hr class="my-4"/>
+            <div class="text-center">
+                <h2>Kendo UI DatePicker</h2>
+                @(Html.Kendo().DatePicker()
+                    .Name("my-picker").Deferred()
+                )
+            </div>
+            <hr class="my-4" />
         </div>
     </div>
     <a href="https://abp.io?ref=tmpl" target="_blank" class="btn btn-primary px-4">abp.io</a>
