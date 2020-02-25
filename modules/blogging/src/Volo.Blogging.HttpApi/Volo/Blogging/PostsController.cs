@@ -28,6 +28,13 @@ namespace Volo.Blogging
         }
 
         [HttpGet]
+        [Route("GetAllOrdered")]
+        public Task<ListResultDto<PostWithDetailsDto>> GetOrderedListPostsByTime()
+        {
+            return _postAppService.GetOrderedListPostsByTime();
+        }
+
+        [HttpGet]
         [Route("read")]
         public Task<PostWithDetailsDto> GetForReadingAsync(GetPostInput input)
         {
