@@ -6,7 +6,6 @@
   },
   "scripts": {
     "ng": "ng",
-    "abpng": "abpng",
     "symlink": "symlink",
     "start": "ng serve dev-app",
     "test": "ng test --watchAll --runInBand",
