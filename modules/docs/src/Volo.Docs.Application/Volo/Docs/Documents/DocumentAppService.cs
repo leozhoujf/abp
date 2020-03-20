@@ -32,8 +32,8 @@ namespace Volo.Docs.Documents
             IDistributedCache<LanguageConfig> languageCache,
             IDistributedCache<DocumentResourceDto> resourceCache,
             IDistributedCache<DocumentUpdateInfo> documentUpdateCache,
-            IHostEnvironment hostEnvironment, 
-            IDocumentFullSearch documentFullSearch, 
+            IHostEnvironment hostEnvironment,
+            IDocumentFullSearch documentFullSearch,
             IOptions<DocsElasticSearchOptions> docsElasticSearchOptions)
         {
             _projectRepository = projectRepository;
@@ -195,23 +195,30 @@ namespace Volo.Docs.Documents
                 Logger.LogInformation($"Not found in the cache. Requesting {documentName} from the source...");
 
                 var source = _documentStoreFactory.Create(project.DocumentStoreType);
-                var sourceDocument = await source.GetDocumentAsync(project, documentName, languageCode, version, oldDocument?.LastSignificantUpdateTime);
 
-                await _documentRepository.DeleteAsync(project.Id, sourceDocument.Name, sourceDocument.LanguageCode, sourceDocument.Version);
-                await _documentRepository.InsertAsync(sourceDocument, true);
+                var doc = await source.GetDocumentAsync(project,
+                    documentName,
+                    languageCode,
+                    version,
+                    oldDocument?.LastSignificantUpdateTime
+                );
+
+                await _documentRepository.DeleteAsync(project.Id, doc.Name, doc.LanguageCode, doc.Version);
+                await _documentRepository.InsertAsync(doc, true);
 
                 Logger.LogInformation($"Document retrieved: {documentName}");
 
-                var cacheKey = $"DocumentUpdateInfo{sourceDocument.ProjectId}#{sourceDocument.Name}#{sourceDocument.LanguageCode}#{sourceDocument.Version}";
-                await DocumentUpdateCache.SetAsync(cacheKey, new DocumentUpdateInfo
+                var documentCacheKey = $"DocumentUpdateInfo{doc.ProjectId}#{doc.Name}#{doc.LanguageCode}#{doc.Version}";
+
+                await DocumentUpdateCache.SetAsync(documentCacheKey, new DocumentUpdateInfo
                 {
-                    Name = sourceDocument.Name,
-                    CreationTime = sourceDocument.CreationTime,
-                    LastUpdatedTime = sourceDocument.LastUpdatedTime,
-                    LastSignificantUpdateTime = sourceDocument.LastSignificantUpdateTime
+                    Name = doc.Name,
+                    CreationTime = doc.CreationTime,
+                    LastUpdatedTime = doc.LastUpdatedTime,
+                    LastSignificantUpdateTime = doc.LastSignificantUpdateTime
                 });
 
-                return CreateDocumentWithDetailsDto(project, sourceDocument);
+                return CreateDocumentWithDetailsDto(project, doc);
             }
 
             if (HostEnvironment.IsDevelopment())

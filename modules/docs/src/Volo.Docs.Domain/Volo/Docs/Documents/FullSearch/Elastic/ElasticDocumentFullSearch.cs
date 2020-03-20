@@ -81,7 +81,6 @@ namespace Volo.Docs.Documents.FullSearch.Elastic
                 HandleError(await client.UpdateAsync(DocumentPath<EsDocument>.Id(document.Id),
                     x => x.Doc(esDocument).Index(_options.IndexName), cancellationToken));
             }
-
         }
 
         public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)

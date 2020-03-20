@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -8,6 +9,7 @@ using Volo.Abp.Application.Services;
 using Volo.Abp.Caching;
 using Volo.Docs.Documents;
 using Volo.Docs.Documents.FullSearch.Elastic;
+using Volo.Docs.Documents.Renderers;
 using Volo.Docs.Projects;
 
 namespace Volo.Docs.Admin.Documents
@@ -20,18 +22,21 @@ namespace Volo.Docs.Admin.Documents
         private readonly IDocumentSourceFactory _documentStoreFactory;
         private readonly IDistributedCache<DocumentUpdateInfo> _documentUpdateCache;
         private readonly IDocumentFullSearch _documentFullSearch;
+        private readonly IDocumentSectionRenderer _documentSectionRenderer;
 
         public DocumentAdminAppService(IProjectRepository projectRepository,
             IDocumentRepository documentRepository,
             IDocumentSourceFactory documentStoreFactory,
             IDistributedCache<DocumentUpdateInfo> documentUpdateCache,
-            IDocumentFullSearch documentFullSearch)
+            IDocumentFullSearch documentFullSearch,
+            IDocumentSectionRenderer documentSectionRenderer)
         {
             _projectRepository = projectRepository;
             _documentRepository = documentRepository;
             _documentStoreFactory = documentStoreFactory;
             _documentUpdateCache = documentUpdateCache;
             _documentFullSearch = documentFullSearch;
+            _documentSectionRenderer = documentSectionRenderer;
         }
 
         public async Task PullAllAsync(PullAllDocumentInput input)
@@ -55,16 +60,17 @@ namespace Volo.Docs.Admin.Documents
             var documents = new List<Document>();
             foreach (var leaf in leafs)
             {
-                var sourceDocument =
-                    await source.GetDocumentAsync(project, leaf.Path, input.LanguageCode, input.Version);
+                var sourceDocument = await source.GetDocumentAsync(project, leaf.Path, input.LanguageCode, input.Version);
                 documents.Add(sourceDocument);
             }
 
             foreach (var document in documents)
             {
-                await _documentRepository.DeleteAsync(document.ProjectId, document.Name,
+                await _documentRepository.DeleteAsync(
+                    document.ProjectId, document.Name,
                     document.LanguageCode,
-                    document.Version);
+                    document.Version
+                );
 
                 await _documentRepository.InsertAsync(document, true);
                 await UpdateDocumentUpdateInfoCache(document);
@@ -78,35 +84,55 @@ namespace Volo.Docs.Admin.Documents
             var source = _documentStoreFactory.Create(project.DocumentStoreType);
             var sourceDocument = await source.GetDocumentAsync(project, input.Name, input.LanguageCode, input.Version);
 
-            await _documentRepository.DeleteAsync(sourceDocument.ProjectId, sourceDocument.Name,
-                sourceDocument.LanguageCode, sourceDocument.Version);
+            await _documentRepository.DeleteAsync(
+                sourceDocument.ProjectId,
+                sourceDocument.Name,
+                sourceDocument.LanguageCode,
+                sourceDocument.Version
+            );
+
             await _documentRepository.InsertAsync(sourceDocument, true);
             await UpdateDocumentUpdateInfoCache(sourceDocument);
         }
 
         public async Task ReindexAsync()
         {
-            var docs = await _documentRepository.GetListAsync();
             var projects = await _projectRepository.GetListAsync();
-            foreach (var doc in docs)
+            var documents = await _documentRepository.GetListAsync();
+
+            foreach (var document in documents)
             {
-                var project = projects.FirstOrDefault(x => x.Id == doc.ProjectId);
+                var project = projects.FirstOrDefault(x => x.Id == document.ProjectId);
                 if (project == null)
                 {
                     continue;
                 }
 
-                if (doc.FileName == project.NavigationDocumentName)
+                if (document.FileName == project.NavigationDocumentName)
                 {
                     continue;
                 }
 
-                if (doc.FileName == project.ParametersDocumentName)
+                if (document.FileName == project.ParametersDocumentName)
                 {
                     continue;
                 }
 
-                await _documentFullSearch.AddOrUpdateAsync(doc);
+                var documentSource = _documentStoreFactory.Create(project.DocumentStoreType);
+
+                var doc = await documentSource.GetDocumentAsync(project,
+                    document.Name,
+                    document.LanguageCode,
+                    document.Version,
+                    document?.LastSignificantUpdateTime
+                );
+
+                //do scriban rendering 
+                //the problem is; in this phase, cannot get user preferences and variables
+                //therefore cartesian of all variables should be cached
+                doc.Content = await _documentSectionRenderer.RenderAsync(doc.Content);
+
+                await _documentFullSearch.AddOrUpdateAsync(document);
             }
         }
 

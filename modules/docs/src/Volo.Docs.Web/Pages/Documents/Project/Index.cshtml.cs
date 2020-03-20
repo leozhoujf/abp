@@ -7,12 +7,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Volo.Abp;
-using Volo.Abp.AspNetCore.Mvc.Localization;
 using Volo.Abp.AspNetCore.Mvc.UI.RazorPages;
 using Volo.Abp.Domain.Entities;
-using Volo.Abp.Localization;
 using Volo.Docs.Documents;
+using Volo.Docs.Documents.Renderers;
 using Volo.Docs.HtmlConverting;
 using Volo.Docs.Models;
 using Volo.Docs.Projects;
@@ -409,6 +407,7 @@ namespace Volo.Docs.Pages.Documents.Project
         private async Task ConvertDocumentContentToHtmlAsync()
         {
             await SetDocumentPreferencesAsync();
+
             SetUserPreferences();
 
             var partialTemplates = await GetDocumentPartialTemplatesAsync();
@@ -536,7 +535,6 @@ namespace Volo.Docs.Pages.Documents.Project
                     UserPreferences.Add(parameter.Name + "_Value", parameter.Values.FirstOrDefault().Value);
                 }
             }
-
         }
 
         public async Task SetDocumentPreferencesAsync()

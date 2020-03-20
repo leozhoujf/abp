@@ -22,20 +22,12 @@ namespace Volo.Docs.Documents.FullSearch.Elastic
 
         public async Task HandleEventAsync(EntityCreatedEventData<Document> eventData)
         {
-            await AddOrUpdate(eventData.Entity);
+            await AddOrUpdateToSearchIndex(eventData.Entity);
         }
 
         public async Task HandleEventAsync(EntityUpdatedEventData<Document> eventData)
         {
-            await AddOrUpdate(eventData.Entity);
-        }
-
-        private async Task AddOrUpdate(Document document)
-        {
-            if (_options.Enable)
-            {
-                await _documentFullSearch.AddOrUpdateAsync(document);
-            }
+            await AddOrUpdateToSearchIndex(eventData.Entity);
         }
 
         public async Task HandleEventAsync(EntityDeletedEventData<Document> eventData)
@@ -43,6 +35,14 @@ namespace Volo.Docs.Documents.FullSearch.Elastic
             if (_options.Enable)
             {
                 await _documentFullSearch.DeleteAsync(eventData.Entity.Id);
+            }
+        }
+        
+        private async Task AddOrUpdateToSearchIndex(Document document)
+        {
+            if (_options.Enable)
+            {
+                await _documentFullSearch.AddOrUpdateAsync(document);
             }
         }
     }
