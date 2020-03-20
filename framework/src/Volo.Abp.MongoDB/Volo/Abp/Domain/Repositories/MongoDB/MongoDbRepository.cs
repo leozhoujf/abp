@@ -6,6 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using Volo.Abp.Auditing;
 using Volo.Abp.Data;
 using Volo.Abp.Domain.Entities;
@@ -29,6 +30,9 @@ namespace Volo.Abp.Domain.Repositories.MongoDB
         public virtual IMongoCollection<TEntity> Collection => DbContext.Collection<TEntity>();
 
         public virtual IMongoDatabase Database => DbContext.Database;
+
+        [CanBeNull] 
+        public virtual IClientSessionHandle SessionHandle => DbContext.SessionHandle;
 
         public virtual TMongoDbContext DbContext => DbContextProvider.GetDbContext();
 
@@ -60,10 +64,16 @@ namespace Volo.Abp.Domain.Repositories.MongoDB
         {
             await ApplyAbpConceptsForAddedEntityAsync(entity);
 
-            await Collection.InsertOneAsync(
-                entity,
-                cancellationToken: GetCancellationToken(cancellationToken)
-            );
+            await (SessionHandle != null
+                ? Collection.InsertOneAsync(
+                    SessionHandle,
+                    entity,
+                    cancellationToken: GetCancellationToken(cancellationToken)
+                )
+                : Collection.InsertOneAsync(
+                    entity,
+                    cancellationToken: GetCancellationToken(cancellationToken)
+                ));
 
             return entity;
         }
@@ -89,11 +99,18 @@ namespace Volo.Abp.Domain.Repositories.MongoDB
 
             var oldConcurrencyStamp = SetNewConcurrencyStamp(entity);
 
-            var result = await Collection.ReplaceOneAsync(
-                CreateEntityFilter(entity, true, oldConcurrencyStamp),
-                entity,
-                cancellationToken: GetCancellationToken(cancellationToken)
-            );
+            var result = SessionHandle != null
+                ? await Collection.ReplaceOneAsync(
+                    SessionHandle,
+                    CreateEntityFilter(entity, true, oldConcurrencyStamp),
+                    entity,
+                    cancellationToken: GetCancellationToken(cancellationToken)
+                )
+                : await Collection.ReplaceOneAsync(
+                    CreateEntityFilter(entity, true, oldConcurrencyStamp),
+                    entity,
+                    cancellationToken: GetCancellationToken(cancellationToken)
+                );
 
             if (result.MatchedCount <= 0)
             {
@@ -114,11 +131,18 @@ namespace Volo.Abp.Domain.Repositories.MongoDB
             if (entity is ISoftDelete softDeleteEntity && !IsHardDeleted(entity))
             {
                 softDeleteEntity.IsDeleted = true;
-                var result = await Collection.ReplaceOneAsync(
-                    CreateEntityFilter(entity, true, oldConcurrencyStamp),
-                    entity,
-                    cancellationToken: GetCancellationToken(cancellationToken)
-                );
+                var result = await (SessionHandle != null
+                    ? Collection.ReplaceOneAsync(
+                        SessionHandle,
+                        CreateEntityFilter(entity, true, oldConcurrencyStamp),
+                        entity,
+                        cancellationToken: GetCancellationToken(cancellationToken)
+                    )
+                    : Collection.ReplaceOneAsync(
+                        CreateEntityFilter(entity, true, oldConcurrencyStamp),
+                        entity,
+                        cancellationToken: GetCancellationToken(cancellationToken)
+                    ));
 
                 if (result.MatchedCount <= 0)
                 {
@@ -127,10 +151,18 @@ namespace Volo.Abp.Domain.Repositories.MongoDB
             }
             else
             {
-                var result = await Collection.DeleteOneAsync(
-                    CreateEntityFilter(entity, true, oldConcurrencyStamp),
-                    GetCancellationToken(cancellationToken)
-                );
+                var result = await (SessionHandle != null
+                    ? Collection.DeleteOneAsync(
+                        SessionHandle,
+                        CreateEntityFilter(entity, true, oldConcurrencyStamp),
+                        null,
+                        GetCancellationToken(cancellationToken)
+                    )
+                    : Collection.DeleteOneAsync(
+                        CreateEntityFilter(entity, true, oldConcurrencyStamp),
+                        null,
+                        GetCancellationToken(cancellationToken)
+                    ));
 
                 if (result.DeletedCount <= 0)
                 {
@@ -359,9 +391,13 @@ namespace Volo.Abp.Domain.Repositories.MongoDB
             bool includeDetails = true,
             CancellationToken cancellationToken = default)
         {
-            return await Collection
-                .Find(CreateEntityFilter(id, true))
-                .FirstOrDefaultAsync(GetCancellationToken(cancellationToken));
+            return await (SessionHandle != null
+                ? Collection
+                    .Find(SessionHandle, CreateEntityFilter(id, true))
+                    .FirstOrDefaultAsync(GetCancellationToken(cancellationToken))
+                : Collection
+                    .Find(CreateEntityFilter(id, true))
+                    .FirstOrDefaultAsync(GetCancellationToken(cancellationToken)));
         }
 
         public virtual Task DeleteAsync(
@@ -369,10 +405,17 @@ namespace Volo.Abp.Domain.Repositories.MongoDB
             bool autoSave = false,
             CancellationToken cancellationToken = default)
         {
-            return Collection.DeleteOneAsync(
-                CreateEntityFilter(id),
-                GetCancellationToken(cancellationToken)
-            );
+            return SessionHandle != null
+                ? Collection.DeleteOneAsync(
+                    SessionHandle,
+                    CreateEntityFilter(id),
+                    null,
+                    GetCancellationToken(cancellationToken)
+                )
+                : Collection.DeleteOneAsync(
+                    CreateEntityFilter(id),
+                    GetCancellationToken(cancellationToken)
+                );
         }
 
         protected override FilterDefinition<TEntity> CreateEntityFilter(TEntity entity, bool withConcurrencyStamp = false, string concurrencyStamp = null)

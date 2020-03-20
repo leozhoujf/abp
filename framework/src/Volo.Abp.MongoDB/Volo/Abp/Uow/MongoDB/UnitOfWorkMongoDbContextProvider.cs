@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using Microsoft.Extensions.DependencyInjection;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using Volo.Abp.Data;
 using Volo.Abp.MongoDB;
@@ -43,12 +44,35 @@ namespace Volo.Abp.Uow.MongoDB
                 dbContextKey,
                 () =>
                 {
-                    var database = new MongoClient(mongoUrl).GetDatabase(databaseName);
+                    var client = new MongoClient(mongoUrl);
+                    var database = client.GetDatabase(databaseName);
 
                     var dbContext = unitOfWork.ServiceProvider.GetRequiredService<TMongoDbContext>();
 
-                    dbContext.ToAbpMongoDbContext().InitializeDatabase(database);
+                    if (unitOfWork.Options.IsTransactional)
+                    {
+                        var session = client.StartSession();
+                        session.StartTransaction();
+                        
+                        if (unitOfWork.Options.Timeout.HasValue)
+                        {
+                            //TODO: Test this.
+                            session.AdvanceOperationTime(new BsonTimestamp((long)unitOfWork.Options.Timeout.Value.TotalSeconds));
+                        }
 
+                        var transactionApiKey = $"MongoDb_{mongoUrl}";
+                        unitOfWork.AddTransactionApi(
+                            transactionApiKey,
+                            new MongoDbTransactionApi(session)
+                        );
+                        
+                        dbContext.ToAbpMongoDbContext().InitializeDatabase(database, session);
+                    }
+                    else
+                    {
+                        dbContext.ToAbpMongoDbContext().InitializeDatabase(database, null);
+                    }
+                    
                     return new MongoDbDatabaseApi<TMongoDbContext>(dbContext);
                 });
 
